@@ -11,15 +11,15 @@ class Firms
 		float alpha = 0.1;
 		float varpf = 0.4;
 		std::vector<float> price;
-		std::vector<float> debt(numberOfFirms, 0);
-		std::vector<float> networth(numberOfFirms, 10);
-		std::vector<float> profit(numberOfFirms, 0);
-		std::vector<float> interestRate(numberOfFirms, 0);
-		std::vector<float> leverage(numberOfFirms, 1);
-		std::vector<float> capital(numberOfFirms, 0);
-		std::vector<float> output(numberOfFirms, 0);
-		std::vector<float> lgdf(numberOfFirms, 0);
-		std::vector<float> defaulted(numberOfFirms, 0);
+		std::vector<float> debt = std::vector<float>(numberOfFirms, 0);
+		std::vector<float> networth = std::vector<float>(numberOfFirms, 10);
+		std::vector<float> profit = std::vector<float>(numberOfFirms, 0);
+		std::vector<float> interestRate = std::vector<float>(numberOfFirms, 0);
+		std::vector<float> leverage = std::vector<float>(numberOfFirms, 1);
+		std::vector<float> capital = std::vector<float>(numberOfFirms, 0);
+		std::vector<float> output = std::vector<float>(numberOfFirms, 0);
+		std::vector<float> lgdf = std::vector<float>(numberOfFirms, 0);
+		std::vector<float> defaulted = std::vector<float>(numberOfFirms, 0);
 
 		Firms();
 
@@ -30,14 +30,14 @@ class Banks
 {
 	public:
 		int numberOfBanks = 10;
-		std::vector<float> interestRate(numberOfBanks, 0);
-		std::vector<float> networth(numberOfBanks, 10);
-		std::vector<float> deposit(numberOfBanks, 0);
-		std::vector<float> badDebt(numberOfBanks, 0);
-		std::vector<float> profit(numberOfBanks, 0);
-		std::vector<float> creditLinkDegree(numberOfBanks, 0);
-		std::vector<float> nonPerformingLoans(numberOfBanks, 0);
-		std::vector<float> defaulted(numberOfBanks, 0);
+		std::vector<float> interestRate = std::vector<float>(numberOfBanks, 0);
+		std::vector<float> networth = std::vector<float>(numberOfBanks, 10);
+		std::vector<float> deposit = std::vector<float>(numberOfBanks, 0);
+		std::vector<float> badDebt = std::vector<float>(numberOfBanks, 0);
+		std::vector<float> profit = std::vector<float>(numberOfBanks, 0);
+		std::vector<float> creditLinkDegree = std::vector<float>(numberOfBanks, 0);
+		std::vector<float> nonPerformingLoans = std::vector<float>(numberOfBanks, 0);
+		std::vector<float> defaulted = std::vector<float>(numberOfBanks, 0);
 
 		Banks();
 
