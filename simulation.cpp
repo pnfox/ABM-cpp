@@ -96,7 +96,22 @@ void Simulation::updateFirmPrice()
 
 void Simulation::updateFirmInterestRate()
 {
+	float bestFirmWorth = maxFirmWealth();
+	std::vector<int> banksOfFirms = {};
+	for(int i=0; i < numberOfFirms; i++){
+		for(int j=0; j < numberOfBanks; j++){
+			if(link_fb[i][j] != 0){
+				banksOfFirms.insert(banksOfFirms.end(), j);
+			}
+		}
+	}
+	if(banksOfFirms.size() != numberOfFirms){
+		std::cout << "Some firms missing banks" << std::endl;
+	}
 
+	for(int i=0; i < numberOfFirms; i++){
+		firms.interestRate[i] = rCB + banks.interestRate[banksOfFirms[i]] + (gamma * firms.leverage[i]) / ((1+firms.networth[i])/bestFirmWorth);
+	}
 }
 
 void Simulation::updateFirmProfit()
@@ -111,9 +126,9 @@ void Simulation::updateFirmsNetworth()
 	for(int i=0; i < numberOfFirms; i++){
 		firms.networth[i] = firms.networth[i] + firms.profit[i];
 		if(firms.networth[i] <= 0){
-			firms.default[i] = 1;
+			firms.defaulted[i] = 1;
 		} else{
-			firms.default[i] = 0;
+			firms.defaulted[i] = 0;
 		}
 	}
 }
@@ -123,9 +138,9 @@ void Simulation::updateBanksNetworth()
 	for(int i=0; i < numberOfBanks; i++){
 		banks.networth[i] = banks.networth[i] + banks.profit[i];
 		if(banks.networth[i] <= 0){
-			banks.default[i] = 1;
+			banks.defaulted[i] = 1;
 		} else{
-			banks.default[i] = 0;
+			banks.defaulted[i] = 0;
 		}
 	}
 }
