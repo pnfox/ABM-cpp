@@ -93,3 +93,62 @@ void Simulation::updateFirmPrice()
 {
 	
 }
+
+void Simulation::updateFirmInterestRate()
+{
+
+}
+
+void Simulation::updateFirmProfit()
+{
+	for(int i=0; i < numberOfFirms; i++){
+		firms.profit[i] = firms.price[i] * firms.output[i] - firms.interestRate[i] * firms.debt[i];
+	}
+}
+
+void Simulation::updateFirmsNetworth()
+{
+	for(int i=0; i < numberOfFirms; i++){
+		firms.networth[i] = firms.networth[i] + firms.profit[i];
+		if(firms.networth[i] <= 0){
+			firms.default[i] = 1;
+		} else{
+			firms.default[i] = 0;
+		}
+	}
+}
+
+void Simulation::updateBanksNetworth()
+{
+	for(int i=0; i < numberOfBanks; i++){
+		banks.networth[i] = banks.networth[i] + banks.profit[i];
+		if(banks.networth[i] <= 0){
+			banks.default[i] = 1;
+		} else{
+			banks.default[i] = 0;
+		}
+	}
+}
+
+void Simulation::updateFirmLeverage()
+{
+
+}
+
+void Simulation::updateFirmDebt()
+{
+	for(int i=0; i < numberOfFirms; i++){
+		firms.debt[i] = firms.leverage[i] * firms.networth[i];
+	}
+}
+
+void Simulation::updateLossRatio()
+{
+	for(int i=0; i < numberOfFirms; i++){
+		firms.lgdf[i] = -firms.networth[i] / firms.debt[i];
+		if(firms.lgdf[i] > 1){
+			firms.lgdf[i] = 1;
+		} else if(firms.lgdf[i] < 0){
+			firms.lgdf[i] = 0;
+	}
+}
