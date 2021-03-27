@@ -1,4 +1,5 @@
 #include <cmath>
+#include <random>
 #include "simulation.h"
 
 Simulation::Simulation()
@@ -40,7 +41,38 @@ std::vector<int> Simulation::findBankCustomers(int bank)
 
 void Simulation::calculateDeposits()
 {
+	int bankIndex = 0;
+	std::vector<int> bankCustomers = {};
+	float customersDebt = 0;
+	float badDebt = 0;
+	float bankProfit = 0;
+	for(int i=0; i < numberOfBanks; i++){
+		bankCustomers = {};
+		customersDebt = 0;
+		badDebt = 0;
+		bankProfit = 0;
+		bankCustomers = findBankCustomers(i);
+		for(int j=0; j < bankCustomers.size(); j++){
+			customersDebt += firms.debt[bankCustomers[j]];
+		}
+		banks.deposit[i] = customersDebt - banks.networth[i];
 
+		// If bank has gone bankrupt
+		if(banks.deposit[i] < 0){
+			banks.deposit[i] = 0;
+		}
+
+		for(int j : bankCustomers){
+			// compute bad debt
+			if(firms.defaulted[j] == 1){
+				badDebt += firms.lgdf[j] * firms.debt[j];
+			} else if(firms.defaulted[j] == 0){
+				bankProfit += firms.debt[j] * firms.interestRate[j];
+			}
+		}
+		banks.badDebt[i] = badDebt;
+		banks.profit[i] = bankProfit - (rCB * banks.deposit[i] - cB * banks.networth[i] - banks.badDebt[i]);
+	}
 }
 
 float Simulation::maxFirmWealth()
@@ -91,7 +123,10 @@ void Simulation::updateFirmOutput()
 
 void Simulation::updateFirmPrice()
 {
-	
+	firms.price_dist = std::normal_distribution<float>(alpha, std::sqrt(varpf));
+	for(int i=0; i < numberOfFirms; i++){
+		firms.price[i] = firms.price_dist(firms.gen);
+	}
 }
 
 void Simulation::updateFirmInterestRate()
@@ -105,9 +140,9 @@ void Simulation::updateFirmInterestRate()
 			}
 		}
 	}
-	if(banksOfFirms.size() != numberOfFirms){
-		std::cout << "Some firms missing banks" << std::endl;
-	}
+	//if(banksOfFirms.size() != numberOfFirms){
+	//	std::cout << "Some firms missing banks" << std::endl;
+	//}
 
 	for(int i=0; i < numberOfFirms; i++){
 		firms.interestRate[i] = rCB + banks.interestRate[banksOfFirms[i]] + (gamma * firms.leverage[i]) / ((1+firms.networth[i])/bestFirmWorth);

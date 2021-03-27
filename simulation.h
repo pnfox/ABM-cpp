@@ -19,7 +19,8 @@ class Simulation
 		float adj = 0.1;
 		int phi = 3;
 		float beta = 0.7;
-		float rCB = 0.01;
+		float rCB = 0.02;
+		float cB = 0.01;
 		int seed = 900000;
 
 		// Agents
