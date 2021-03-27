@@ -20,6 +20,7 @@ class Simulation
 		int phi = 3;
 		float beta = 0.7;
 		float rCB = 0.01;
+		int seed = 900000;
 
 		// Agents
 		Firms firms;
