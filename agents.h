@@ -10,7 +10,10 @@ class Firms
 		int numberOfFirms = 100;
 		float alpha = 0.1;
 		float varpf = 0.4;
+		unsigned int seed;
+		std::mt19937 gen;
 		std::vector<float> price;
+		std::normal_distribution<float> price_dist{alpha, varpf};
 		std::vector<float> debt = std::vector<float>(numberOfFirms, 0);
 		std::vector<float> networth = std::vector<float>(numberOfFirms, 10);
 		std::vector<float> profit = std::vector<float>(numberOfFirms, 0);
@@ -43,5 +46,4 @@ class Banks
 
 		bool isDefaulted(int bank);
 };
-
 #endif

@@ -182,7 +182,16 @@ void Simulation::updateBanksNetworth()
 
 void Simulation::updateFirmLeverage()
 {
-
+	std::uniform_real_distribution<double> dis(0,1);
+	double u = 0;
+	for(int i=0; i < numberOfFirms; i++){
+		u = dis(firms.gen);
+		if(firms.price[i] > firms.interestRate){
+			firms.leverage[i] = firms.leverage[i] * (1 + adj * u);
+		} else{
+			firms.leverage[i] = firms.leverage[i] * (1 - adj * u);
+		}
+	}
 }
 
 void Simulation::updateFirmDebt()
