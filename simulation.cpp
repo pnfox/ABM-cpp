@@ -24,6 +24,24 @@ int Simulation::findBestBank(std::vector<int> potentialPartners)
 
 void Simulation::findMatchings(int p_time)
 {
+        // Need an array of integers of length chi*numberofFirms
+	// where each element represents the index of a bank
+	// that could be a potential partner for a firm
+	dist = std::uniform_int_distribution<> distrib(0, numberOfBanks);
+	int bestBank = 0;
+	float newInterest = 0;
+
+	// TODO: For each firm do the following
+	std::vector<int> potentialPartners(chi, 0);
+	for(int i=0; i < chi; i++){
+		potentialPartners[i] = dist(firms.gen);
+	}
+
+	bestBank = findBestBank(potentialPartners);
+
+	newInterest = banks.interestRate[bestBank];
+
+	// TODO: Get interest of old partner via link_fb
 
 }
 
