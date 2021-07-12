@@ -27,7 +27,7 @@ void Simulation::findMatchings(int p_time)
         // Need an array of integers of length chi*numberofFirms
 	// where each element represents the index of a bank
 	// that could be a potential partner for a firm
-	dist = std::uniform_int_distribution<> distrib(0, numberOfBanks);
+	std::uniform_int_distribution<> dist(0, numberOfBanks);
 	int bestBank = 0;
 	int currentBank = 0;
 	float newInterest = 0;
@@ -55,15 +55,15 @@ void Simulation::findMatchings(int p_time)
 
 		if(newInterest < oldInterest){
 			// log change in firm-bank relationship
-			changeFB[p_time] = changeFB[p_time] + 1;
+			// changeFB[p_time] = changeFB[p_time] + 1;
 
 			// update link
 			link_fb[f] = 0;
-			link_fb[f][bestBankIndex] = 1;
+			link_fb[f][bestBank] = 1;
 		}
 	}
 
-	changeFB[p_time] = changeFB[p_time] / numberOfFirms;
+	//changeFB[p_time] = changeFB[p_time] / numberOfFirms;
 }
 
 std::vector<int> Simulation::findBankCustomers(int bank)
@@ -125,7 +125,7 @@ float Simulation::maxFirmWealth()
 
 void Simulation::replaceDefaults()
 {
-	
+
 }
 
 void Simulation::updateInterestRates()
@@ -195,7 +195,7 @@ void Simulation::updateFirmProfit()
 	}
 }
 
-void Simulation::updateFirmsNetworth()
+void Simulation::updateFirmNetworth()
 {
 	for(int i=0; i < numberOfFirms; i++){
 		firms.networth[i] = firms.networth[i] + firms.profit[i];
@@ -207,7 +207,7 @@ void Simulation::updateFirmsNetworth()
 	}
 }
 
-void Simulation::updateBanksNetworth()
+void Simulation::updateBankNetworth()
 {
 	for(int i=0; i < numberOfBanks; i++){
 		banks.networth[i] = banks.networth[i] + banks.profit[i];
@@ -233,13 +233,6 @@ void Simulation::updateFirmLeverage()
 	}
 }
 
-void Simulation::updateFirmDebt()
-{
-	for(int i=0; i < numberOfFirms; i++){
-		firms.debt[i] = firms.leverage[i] * firms.networth[i];
-	}
-}
-
 void Simulation::updateLossRatio()
 {
 	for(int i=0; i < numberOfFirms; i++){
@@ -248,5 +241,6 @@ void Simulation::updateLossRatio()
 			firms.lgdf[i] = 1;
 		} else if(firms.lgdf[i] < 0){
 			firms.lgdf[i] = 0;
+		}
 	}
 }

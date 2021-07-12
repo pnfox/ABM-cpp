@@ -9,8 +9,8 @@ class Simulation
 	public:
 		// parameters
 		int time = 0;
-		int numberOfFirms = 0;
-		int numberOfBanks = 0;
+		int numberOfFirms = 100;
+		int numberOfBanks = 10;
 		float alpha = 0.1;
 		float varpf = 0.4;
 		float gamma = 0.02;
@@ -28,8 +28,7 @@ class Simulation
 		Banks banks;
 
 		// Firm-bank adjacency matrix
-		std::vector<std::vector<int>> link_fb = std::vector<int>(numberOfFirms,
-				std::vector<int>(numberOfBanks));
+		std::vector<std::vector<int>> link_fb;
 
 		// Constructor
 		Simulation();
@@ -49,9 +48,8 @@ class Simulation
 		void updateFirmInterestRate();
 		void updateFirmProfit();
 		void updateFirmNetworth();
-		void updateBankNetworth();
 		void updateFirmLeverage();
-		void updateFirmDebt();
+		void updateBankNetworth();
 		void updateLossRatio();
 		void run();
 };
