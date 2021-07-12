@@ -29,20 +29,41 @@ void Simulation::findMatchings(int p_time)
 	// that could be a potential partner for a firm
 	dist = std::uniform_int_distribution<> distrib(0, numberOfBanks);
 	int bestBank = 0;
+	int currentBank = 0;
 	float newInterest = 0;
+	float oldInterest = INFINITY;
 
 	// TODO: For each firm do the following
-	std::vector<int> potentialPartners(chi, 0);
-	for(int i=0; i < chi; i++){
-		potentialPartners[i] = dist(firms.gen);
+	for(int f=0; f < numberOfFirms; f++){
+		std::vector<int> potentialPartners(chi, 0);
+		for(int i=0; i < chi; i++){
+			potentialPartners[i] = dist(firms.gen);
+		}
+
+		bestBank = findBestBank(potentialPartners);
+
+		newInterest = banks.interestRate[bestBank];
+
+		// TODO: Get interest of old partner via link_fb
+		for(int i=0; i < numberOfBanks; i++){
+			currentBank = link_fb[f][i];
+			if(currentBank != 0){
+				oldInterest = banks.interestRate[currentBank];
+				break;
+			}
+		}
+
+		if(newInterest < oldInterest){
+			// log change in firm-bank relationship
+			changeFB[p_time] = changeFB[p_time] + 1;
+
+			// update link
+			link_fb[f] = 0;
+			link_fb[f][bestBankIndex] = 1;
+		}
 	}
 
-	bestBank = findBestBank(potentialPartners);
-
-	newInterest = banks.interestRate[bestBank];
-
-	// TODO: Get interest of old partner via link_fb
-
+	changeFB[p_time] = changeFB[p_time] / numberOfFirms;
 }
 
 std::vector<int> Simulation::findBankCustomers(int bank)
