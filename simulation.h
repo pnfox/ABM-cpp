@@ -38,7 +38,7 @@ class Simulation
 		void findMatchings(int p_time);
 		std::vector<int> findBankCustomers(int bank);
 		void calculateDeposits();
-		float maxFirmWealth();
+		float getMaxFirmWealth();
 		void replaceDefaults();
 		void updateInterestRates();
 		void updateFirmDebt();

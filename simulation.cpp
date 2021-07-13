@@ -4,7 +4,7 @@
 
 Simulation::Simulation()
 {
-	
+
 }
 
 int Simulation::findBestBank(std::vector<int> potentialPartners)
@@ -58,7 +58,7 @@ void Simulation::findMatchings(int p_time)
 			// changeFB[p_time] = changeFB[p_time] + 1;
 
 			// update link
-			link_fb[f] = 0;
+			link_fb[f] = std::vector<int>(numberOfBanks);
 			link_fb[f][bestBank] = 1;
 		}
 	}
@@ -114,7 +114,7 @@ void Simulation::calculateDeposits()
 	}
 }
 
-float Simulation::maxFirmWealth()
+float Simulation::getMaxFirmWealth()
 {
 	float maxNetworth = -INFINITY;
 	for(float net : firms.networth)
@@ -125,6 +125,44 @@ float Simulation::maxFirmWealth()
 
 void Simulation::replaceDefaults()
 {
+	std::uniform_int_distribution<> dist(0, numberOfBanks);
+	std::uniform_real_distribution<> networth(0, 2);
+	float maxFirmWealth = getMaxFirmWealth();
+	int defaultedFirm;
+	int defaultedBank;
+	int newBankPartner;
+	for(int i=0; i < numberOfFirms; i++){
+		if(firms.defaulted[i] != 1)
+			continue;
+		defaultedFirm = i;
+
+		// Zero the firm-bank links
+		link_fb[defaultedFirm] = std::vector<int>(numberOfBanks);
+
+		// Initialise the new partner link
+		newBankPartner = dist(firms.gen);
+		link_fb[defaultedFirm][newBankPartner] = 1;
+
+		// Create new firms to replace defaulted ones
+		firms.networth[defaultedFirm] = networth(firms.gen);
+		firms.leverage[defaultedFirm] = 1;
+		firms.price[defaultedFirm] = firms.price_dist(firms.gen);
+		firms.interestRate[defaultedFirm] = rCB + banks.interestRate[newBankPartner] + \
+						    + gamma * (firms.leverage[defaultedFirm] / \
+							((1+firms.networth[defaultedFirm] / maxFirmWealth)));
+		firms.defaulted[defaultedFirm] = 0;
+	}
+
+	// Replace defaulted Banks
+	for(int i=0; i < numberOfBanks; i++){
+		if(banks.defaulted[i] != 1)
+			continue;
+		defaultedBank = i;
+
+		banks.networth[defaultedBank] = networth(firms.gen);
+		banks.defaulted[defaultedBank] = 0;
+	}
+
 
 }
 
@@ -170,7 +208,7 @@ void Simulation::updateFirmPrice()
 
 void Simulation::updateFirmInterestRate()
 {
-	float bestFirmWorth = maxFirmWealth();
+	float bestFirmWorth = getMaxFirmWealth();
 	std::vector<int> banksOfFirms = {};
 	for(int i=0; i < numberOfFirms; i++){
 		for(int j=0; j < numberOfBanks; j++){
@@ -225,7 +263,7 @@ void Simulation::updateFirmLeverage()
 	double u = 0;
 	for(int i=0; i < numberOfFirms; i++){
 		u = dis(firms.gen);
-		if(firms.price[i] > firms.interestRate){
+		if(firms.price[i] > firms.interestRate[i]){
 			firms.leverage[i] = firms.leverage[i] * (1 + adj * u);
 		} else{
 			firms.leverage[i] = firms.leverage[i] * (1 - adj * u);
