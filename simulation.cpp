@@ -4,17 +4,18 @@
 
 Simulation::Simulation()
 {
-
+	this->firms = Firms(100);
+	this->banks = Banks(10);
 }
 
 int Simulation::findBestBank(std::vector<int> potentialPartners)
 {
 	float bestInterest = INFINITY;
 	float best = NAN;
-	int i = banks.interestRate[0];
+	int i = this->banks.interestRate[0];
 	for(int partner : potentialPartners){
-		if(banks.interestRate[partner] < bestInterest){
-			bestInterest = banks.interestRate[partner];
+		if(this->banks.interestRate[partner] < bestInterest){
+			bestInterest = this->banks.interestRate[partner];
 			best = partner;
 		}
 	}
@@ -33,22 +34,21 @@ void Simulation::findMatchings(int p_time)
 	float newInterest = 0;
 	float oldInterest = INFINITY;
 
-	// TODO: For each firm do the following
 	for(int f=0; f < numberOfFirms; f++){
 		std::vector<int> potentialPartners(chi, 0);
 		for(int i=0; i < chi; i++){
-			potentialPartners[i] = dist(firms.gen);
+			potentialPartners[i] = dist(this->firms.gen);
 		}
 
 		bestBank = findBestBank(potentialPartners);
 
-		newInterest = banks.interestRate[bestBank];
+		newInterest = this->banks.interestRate[bestBank];
 
 		// TODO: Get interest of old partner via link_fb
 		for(int i=0; i < numberOfBanks; i++){
 			currentBank = link_fb[f][i];
 			if(currentBank != 0){
-				oldInterest = banks.interestRate[currentBank];
+				oldInterest = this->banks.interestRate[currentBank];
 				break;
 			}
 		}
@@ -92,32 +92,32 @@ void Simulation::calculateDeposits()
 		bankProfit = 0;
 		bankCustomers = findBankCustomers(i);
 		for(int j=0; j < bankCustomers.size(); j++){
-			customersDebt += firms.debt[bankCustomers[j]];
+			customersDebt += this->firms.debt[bankCustomers[j]];
 		}
-		banks.deposit[i] = customersDebt - banks.networth[i];
+		this->banks.deposit[i] = customersDebt - this->banks.networth[i];
 
 		// If bank has gone bankrupt
-		if(banks.deposit[i] < 0){
-			banks.deposit[i] = 0;
+		if(this->banks.deposit[i] < 0){
+			this->banks.deposit[i] = 0;
 		}
 
 		for(int j : bankCustomers){
 			// compute bad debt
-			if(firms.defaulted[j] == 1){
-				badDebt += firms.lgdf[j] * firms.debt[j];
-			} else if(firms.defaulted[j] == 0){
-				bankProfit += firms.debt[j] * firms.interestRate[j];
+			if(this->firms.defaulted[j] == 1){
+				badDebt += this->firms.lgdf[j] * this->firms.debt[j];
+			} else if(this->firms.defaulted[j] == 0){
+				bankProfit += this->firms.debt[j] * this->firms.interestRate[j];
 			}
 		}
-		banks.badDebt[i] = badDebt;
-		banks.profit[i] = bankProfit - (rCB * banks.deposit[i] - cB * banks.networth[i] - banks.badDebt[i]);
+		this->banks.badDebt[i] = badDebt;
+		this->banks.profit[i] = bankProfit - (rCB * this->banks.deposit[i] - cB * this->banks.networth[i] - this->banks.badDebt[i]);
 	}
 }
 
 float Simulation::getMaxFirmWealth()
 {
 	float maxNetworth = -INFINITY;
-	for(float net : firms.networth)
+	for(float net : this->firms.networth)
 		if(net > maxNetworth)
 			maxNetworth = net;
 	return maxNetworth;
@@ -132,7 +132,7 @@ void Simulation::replaceDefaults()
 	int defaultedBank;
 	int newBankPartner;
 	for(int i=0; i < numberOfFirms; i++){
-		if(firms.defaulted[i] != 1)
+		if(this->firms.defaulted[i] != 1)
 			continue;
 		defaultedFirm = i;
 
@@ -140,27 +140,27 @@ void Simulation::replaceDefaults()
 		link_fb[defaultedFirm] = std::vector<int>(numberOfBanks);
 
 		// Initialise the new partner link
-		newBankPartner = dist(firms.gen);
+		newBankPartner = dist(this->firms.gen);
 		link_fb[defaultedFirm][newBankPartner] = 1;
 
-		// Create new firms to replace defaulted ones
-		firms.networth[defaultedFirm] = networth(firms.gen);
-		firms.leverage[defaultedFirm] = 1;
-		firms.price[defaultedFirm] = firms.price_dist(firms.gen);
-		firms.interestRate[defaultedFirm] = rCB + banks.interestRate[newBankPartner] + \
-						    + gamma * (firms.leverage[defaultedFirm] / \
-							((1+firms.networth[defaultedFirm] / maxFirmWealth)));
-		firms.defaulted[defaultedFirm] = 0;
+		// Create new this->firms to replace defaulted ones
+		this->firms.networth[defaultedFirm] = networth(this->firms.gen);
+		this->firms.leverage[defaultedFirm] = 1;
+		this->firms.price[defaultedFirm] = this->firms.price_dist(this->firms.gen);
+		this->firms.interestRate[defaultedFirm] = rCB + this->banks.interestRate[newBankPartner] + \
+						    + gamma * (this->firms.leverage[defaultedFirm] / \
+							((1+this->firms.networth[defaultedFirm] / maxFirmWealth)));
+		this->firms.defaulted[defaultedFirm] = 0;
 	}
 
 	// Replace defaulted Banks
 	for(int i=0; i < numberOfBanks; i++){
-		if(banks.defaulted[i] != 1)
+		if(this->banks.defaulted[i] != 1)
 			continue;
 		defaultedBank = i;
 
-		banks.networth[defaultedBank] = networth(firms.gen);
-		banks.defaulted[defaultedBank] = 0;
+		this->banks.networth[defaultedBank] = networth(this->firms.gen);
+		this->banks.defaulted[defaultedBank] = 0;
 	}
 
 
@@ -170,22 +170,22 @@ void Simulation::updateInterestRates()
 {
 	std::vector<float> power(numberOfFirms, 0);
 	for(int i=0; i < numberOfFirms; i++){
-		power[i] = std::pow(banks.networth[i], -gamma);
-		banks.interestRate[i] = gamma * power[i];
+		power[i] = std::pow(this->banks.networth[i], -gamma);
+		this->banks.interestRate[i] = gamma * power[i];
 	}
 }
 
 void Simulation::updateFirmDebt()
 {
 	for(int i=0; i < numberOfFirms; i++){
-		firms.debt[i] = firms.leverage[i] * firms.networth[i];
+		this->firms.debt[i] = this->firms.leverage[i] * this->firms.networth[i];
 	}
 }
 
 void Simulation::updateFirmCapital()
 {
 	for(int i=0; i < numberOfFirms; i++){
-		firms.capital[i] = firms.networth[i] + firms.debt[i];
+		this->firms.capital[i] = this->firms.networth[i] + this->firms.debt[i];
 	}
 }
 
@@ -193,16 +193,16 @@ void Simulation::updateFirmOutput()
 {
 	std::vector<float> power(numberOfFirms, 0);
 	for(int i=0; i < numberOfFirms; i++){
-		power[i] = std::pow(firms.capital[i], beta);
-		firms.output[i] = phi * power[i];
+		power[i] = std::pow(this->firms.capital[i], beta);
+		this->firms.output[i] = phi * power[i];
 	}
 }
 
 void Simulation::updateFirmPrice()
 {
-	firms.price_dist = std::normal_distribution<float>(alpha, std::sqrt(varpf));
+	this->firms.price_dist = std::normal_distribution<float>(alpha, std::sqrt(varpf));
 	for(int i=0; i < numberOfFirms; i++){
-		firms.price[i] = firms.price_dist(firms.gen);
+		this->firms.price[i] = this->firms.price_dist(this->firms.gen);
 	}
 }
 
@@ -217,30 +217,30 @@ void Simulation::updateFirmInterestRate()
 			}
 		}
 	}
-	//if(banksOfFirms.size() != numberOfFirms){
-	//	std::cout << "Some firms missing banks" << std::endl;
+	//if(this->banksOfFirms.size() != numberOfFirms){
+	//	std::cout << "Some this->firms missing this->banks" << std::endl;
 	//}
 
 	for(int i=0; i < numberOfFirms; i++){
-		firms.interestRate[i] = rCB + banks.interestRate[banksOfFirms[i]] + (gamma * firms.leverage[i]) / ((1+firms.networth[i])/bestFirmWorth);
+		this->firms.interestRate[i] = rCB + this->banks.interestRate[banksOfFirms[i]] + (gamma * this->firms.leverage[i]) / ((1+this->firms.networth[i])/bestFirmWorth);
 	}
 }
 
 void Simulation::updateFirmProfit()
 {
 	for(int i=0; i < numberOfFirms; i++){
-		firms.profit[i] = firms.price[i] * firms.output[i] - firms.interestRate[i] * firms.debt[i];
+		this->firms.profit[i] = this->firms.price[i] * this->firms.output[i] - this->firms.interestRate[i] * this->firms.debt[i];
 	}
 }
 
 void Simulation::updateFirmNetworth()
 {
 	for(int i=0; i < numberOfFirms; i++){
-		firms.networth[i] = firms.networth[i] + firms.profit[i];
-		if(firms.networth[i] <= 0){
-			firms.defaulted[i] = 1;
+		this->firms.networth[i] = this->firms.networth[i] + this->firms.profit[i];
+		if(this->firms.networth[i] <= 0){
+			this->firms.defaulted[i] = 1;
 		} else{
-			firms.defaulted[i] = 0;
+			this->firms.defaulted[i] = 0;
 		}
 	}
 }
@@ -248,11 +248,11 @@ void Simulation::updateFirmNetworth()
 void Simulation::updateBankNetworth()
 {
 	for(int i=0; i < numberOfBanks; i++){
-		banks.networth[i] = banks.networth[i] + banks.profit[i];
-		if(banks.networth[i] <= 0){
-			banks.defaulted[i] = 1;
+		this->banks.networth[i] = this->banks.networth[i] + this->banks.profit[i];
+		if(this->banks.networth[i] <= 0){
+			this->banks.defaulted[i] = 1;
 		} else{
-			banks.defaulted[i] = 0;
+			this->banks.defaulted[i] = 0;
 		}
 	}
 }
@@ -262,11 +262,11 @@ void Simulation::updateFirmLeverage()
 	std::uniform_real_distribution<double> dis(0,1);
 	double u = 0;
 	for(int i=0; i < numberOfFirms; i++){
-		u = dis(firms.gen);
-		if(firms.price[i] > firms.interestRate[i]){
-			firms.leverage[i] = firms.leverage[i] * (1 + adj * u);
+		u = dis(this->firms.gen);
+		if(this->firms.price[i] > this->firms.interestRate[i]){
+			this->firms.leverage[i] = this->firms.leverage[i] * (1 + adj * u);
 		} else{
-			firms.leverage[i] = firms.leverage[i] * (1 - adj * u);
+			this->firms.leverage[i] = this->firms.leverage[i] * (1 - adj * u);
 		}
 	}
 }
@@ -274,11 +274,11 @@ void Simulation::updateFirmLeverage()
 void Simulation::updateLossRatio()
 {
 	for(int i=0; i < numberOfFirms; i++){
-		firms.lgdf[i] = -firms.networth[i] / firms.debt[i];
-		if(firms.lgdf[i] > 1){
-			firms.lgdf[i] = 1;
-		} else if(firms.lgdf[i] < 0){
-			firms.lgdf[i] = 0;
+		this->firms.lgdf[i] = -this->firms.networth[i] / this->firms.debt[i];
+		if(this->firms.lgdf[i] > 1){
+			this->firms.lgdf[i] = 1;
+		} else if(this->firms.lgdf[i] < 0){
+			this->firms.lgdf[i] = 0;
 		}
 	}
 }
