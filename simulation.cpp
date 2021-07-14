@@ -2,10 +2,14 @@
 #include <random>
 #include "simulation.h"
 
-Simulation::Simulation()
+Simulation::Simulation(int nFirms, int nBanks) : firms(nFirms), banks(nBanks)
 {
-	this->firms = Firms(100);
-	this->banks = Banks(10);
+	std::vector<std::vector<int>> d(100, std::vector<int>(10));
+	link_fb = d;
+	/*for(int i=0; i < 100; i++){
+		link_fb[i] = std::vector<int>(10);
+	}*/
+
 }
 
 int Simulation::findBestBank(std::vector<int> potentialPartners)

@@ -1,9 +1,8 @@
 #include "agents.h"
 
-Firms::Firms(int nFirms)
+Firms::Firms(int nFirms) : numberOfFirms(nFirms)
 {
-	numberOfFirms = nFirms;
-
+	this->price = std::vector<float>(numberOfFirms, 0);
 	for(int i=0; i < numberOfFirms; i++){
 		this->price[i] = this->price_dist(this->gen);
 	}
@@ -23,10 +22,8 @@ bool Firms::isDefaulted(int firm)
 	return defaulted[firm] == 1 ? true : false;
 }
 
-Banks::Banks(int nBanks)
+Banks::Banks(int nBanks) : numberOfBanks(nBanks)
 {
-	numberOfBanks = nBanks;
-	
 	this->badDebt = std::vector<float>(numberOfBanks, 0);
 	this->networth = std::vector<float>(numberOfBanks, 10);
 	this->profit = std::vector<float>(numberOfBanks, 0);

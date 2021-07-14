@@ -31,7 +31,7 @@ class Simulation
 		std::vector<std::vector<int>> link_fb;
 
 		// Constructor
-		Simulation();
+		Simulation(int nFirms, int nBanks);
 
 		// Methods
 		int findBestBank(std::vector<int> potentialPartners);
