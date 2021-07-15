@@ -10,6 +10,9 @@ int main(int argc, char* argv[])
 	std::cout << "c.numberOfFirms: " << c.numberOfFirms << std::endl;
 	std::cout << "c.numberOfBanks: " << c.numberOfBanks << std::endl;
 
+	c.run();
+
+	std::cout << "Finished sim (in main)" << std::endl;
 
 	return 0;
 }

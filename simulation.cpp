@@ -1,14 +1,18 @@
 #include <cmath>
 #include <random>
+#include <iostream>
 #include "simulation.h"
 
 Simulation::Simulation(int nFirms, int nBanks) : firms(nFirms), banks(nBanks)
 {
-	std::vector<std::vector<int>> d(100, std::vector<int>(10));
+	numberOfFirms = nFirms;
+	numberOfBanks = nBanks;
+	std::vector<std::vector<int>> d(nFirms, std::vector<int>(nBanks));
 	link_fb = d;
-	/*for(int i=0; i < 100; i++){
-		link_fb[i] = std::vector<int>(10);
-	}*/
+	std::uniform_int_distribution<> dist(0, numberOfBanks-1);
+	for(int f=0; f < numberOfFirms; f++){
+		link_fb[f][dist(this->firms.gen)] = 1;
+	}
 
 }
 
@@ -16,7 +20,6 @@ int Simulation::findBestBank(std::vector<int> potentialPartners)
 {
 	float bestInterest = INFINITY;
 	float best = NAN;
-	int i = this->banks.interestRate[0];
 	for(int partner : potentialPartners){
 		if(this->banks.interestRate[partner] < bestInterest){
 			bestInterest = this->banks.interestRate[partner];
@@ -32,14 +35,14 @@ void Simulation::findMatchings(int p_time)
         // Need an array of integers of length chi*numberofFirms
 	// where each element represents the index of a bank
 	// that could be a potential partner for a firm
-	std::uniform_int_distribution<> dist(0, numberOfBanks);
+	std::uniform_int_distribution<> dist(0, numberOfBanks-1);
 	int bestBank = 0;
 	int currentBank = 0;
 	float newInterest = 0;
 	float oldInterest = INFINITY;
+	std::vector<int> potentialPartners(chi, 0);
 
 	for(int f=0; f < numberOfFirms; f++){
-		std::vector<int> potentialPartners(chi, 0);
 		for(int i=0; i < chi; i++){
 			potentialPartners[i] = dist(this->firms.gen);
 		}
@@ -48,7 +51,6 @@ void Simulation::findMatchings(int p_time)
 
 		newInterest = this->banks.interestRate[bestBank];
 
-		// TODO: Get interest of old partner via link_fb
 		for(int i=0; i < numberOfBanks; i++){
 			currentBank = link_fb[f][i];
 			if(currentBank != 0){
@@ -62,7 +64,7 @@ void Simulation::findMatchings(int p_time)
 			// changeFB[p_time] = changeFB[p_time] + 1;
 
 			// update link
-			link_fb[f] = std::vector<int>(numberOfBanks);
+			link_fb[f][currentBank] = 0;
 			link_fb[f][bestBank] = 1;
 		}
 	}
@@ -129,7 +131,7 @@ float Simulation::getMaxFirmWealth()
 
 void Simulation::replaceDefaults()
 {
-	std::uniform_int_distribution<> dist(0, numberOfBanks);
+	std::uniform_int_distribution<> dist(0, numberOfBanks-1);
 	std::uniform_real_distribution<> networth(0, 2);
 	float maxFirmWealth = getMaxFirmWealth();
 	int defaultedFirm;
@@ -172,8 +174,8 @@ void Simulation::replaceDefaults()
 
 void Simulation::updateInterestRates()
 {
-	std::vector<float> power(numberOfFirms, 0);
-	for(int i=0; i < numberOfFirms; i++){
+	std::vector<float> power(numberOfBanks, 0);
+	for(int i=0; i < numberOfBanks; i++){
 		power[i] = std::pow(this->banks.networth[i], -gamma);
 		this->banks.interestRate[i] = gamma * power[i];
 	}
@@ -213,17 +215,14 @@ void Simulation::updateFirmPrice()
 void Simulation::updateFirmInterestRate()
 {
 	float bestFirmWorth = getMaxFirmWealth();
-	std::vector<int> banksOfFirms = {};
+	std::vector<int> banksOfFirms(numberOfFirms, 0);
 	for(int i=0; i < numberOfFirms; i++){
 		for(int j=0; j < numberOfBanks; j++){
 			if(link_fb[i][j] != 0){
-				banksOfFirms.insert(banksOfFirms.end(), j);
+				banksOfFirms[i] = j;
 			}
 		}
 	}
-	//if(this->banksOfFirms.size() != numberOfFirms){
-	//	std::cout << "Some this->firms missing this->banks" << std::endl;
-	//}
 
 	for(int i=0; i < numberOfFirms; i++){
 		this->firms.interestRate[i] = rCB + this->banks.interestRate[banksOfFirms[i]] + (gamma * this->firms.leverage[i]) / ((1+this->firms.networth[i])/bestFirmWorth);
@@ -284,5 +283,39 @@ void Simulation::updateLossRatio()
 		} else if(this->firms.lgdf[i] < 0){
 			this->firms.lgdf[i] = 0;
 		}
+	}
+}
+
+void Simulation::run()
+{
+	for(int p_time=0; p_time < time; p_time++){
+		updateInterestRates();
+
+		findMatchings(p_time);
+
+		updateFirmLeverage();
+
+		updateFirmDebt();
+
+		updateFirmCapital();
+
+		updateFirmOutput();
+
+		updateFirmPrice();
+
+		updateFirmInterestRate();
+
+		updateFirmProfit();
+
+		updateFirmNetworth();
+
+		updateLossRatio();
+
+		calculateDeposits();
+
+		updateBankNetworth();
+
+		replaceDefaults();
+
 	}
 }

@@ -7,7 +7,7 @@ Firms::Firms(int nFirms) : numberOfFirms(nFirms)
 		this->price[i] = this->price_dist(this->gen);
 	}
 	this->debt = std::vector<float>(numberOfFirms, 0);
-	this->networth = std::vector<float>(numberOfFirms, 0);
+	this->networth = std::vector<float>(numberOfFirms, 10);
 	this->profit = std::vector<float>(numberOfFirms, 0);
 	this->interestRate = std::vector<float>(numberOfFirms, 0);
 	this->leverage = std::vector<float>(numberOfFirms, 1);

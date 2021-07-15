@@ -8,9 +8,9 @@ class Simulation
 {
 	public:
 		// parameters
-		int time = 0;
-		int numberOfFirms = 100;
-		int numberOfBanks = 10;
+		int time = 50;
+		int numberOfFirms;
+		int numberOfBanks;
 		float alpha = 0.1;
 		float varpf = 0.4;
 		float gamma = 0.02;
