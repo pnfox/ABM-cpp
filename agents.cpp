@@ -28,7 +28,7 @@ Banks::Banks(int nBanks) : numberOfBanks(nBanks)
 	this->networth = std::vector<float>(numberOfBanks, 10);
 	this->profit = std::vector<float>(numberOfBanks, 0);
 	this->interestRate = std::vector<float>(numberOfBanks, 0);
-	this->deposit = std::vector<float>(numberOfBanks, 1);
+	this->deposit = std::vector<float>(numberOfBanks, 0);
 	this->creditLinkDegree = std::vector<float>(numberOfBanks, 0);
 	this->nonPerformingLoans = std::vector<float>(numberOfBanks, 0);
 	this->defaulted = std::vector<float>(numberOfBanks, 0);

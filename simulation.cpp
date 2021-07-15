@@ -1,19 +1,31 @@
 #include <cmath>
 #include <random>
 #include <iostream>
+#include <fstream>
 #include "simulation.h"
 
 Simulation::Simulation(int nFirms, int nBanks) : firms(nFirms), banks(nBanks)
 {
 	numberOfFirms = nFirms;
 	numberOfBanks = nBanks;
+
+	// Initialise firm-bank adjacency matrix
 	std::vector<std::vector<int>> d(nFirms, std::vector<int>(nBanks));
 	link_fb = d;
 	std::uniform_int_distribution<> dist(0, numberOfBanks-1);
 	for(int f=0; f < numberOfFirms; f++){
 		link_fb[f][dist(this->firms.gen)] = 1;
+		link_fb[f][dist(this->firms.gen)] = 1;
+		link_fb[f][dist(this->firms.gen)] = 1;
+		link_fb[f][dist(this->firms.gen)] = 1;
+		link_fb[f][dist(this->firms.gen)] = 1;
 	}
 
+	GDP = std::vector<float>(time);
+	totalCapital = std::vector<float>(time);
+	avgFirmPrice = std::vector<float>(time);
+	totalWealth = std::vector<float>(time);
+	totalDebt = std::vector<float>(time);
 }
 
 int Simulation::findBestBank(std::vector<int> potentialPartners)
@@ -88,6 +100,7 @@ void Simulation::calculateDeposits()
 {
 	int bankIndex = 0;
 	std::vector<int> bankCustomers = {};
+	int numberCustomers = 0;
 	float customersDebt = 0;
 	float badDebt = 0;
 	float bankProfit = 0;
@@ -97,7 +110,8 @@ void Simulation::calculateDeposits()
 		badDebt = 0;
 		bankProfit = 0;
 		bankCustomers = findBankCustomers(i);
-		for(int j=0; j < bankCustomers.size(); j++){
+		numberCustomers = bankCustomers.size();
+		for(int j=0; j < numberCustomers; j++){
 			customersDebt += this->firms.debt[bankCustomers[j]];
 		}
 		this->banks.deposit[i] = customersDebt - this->banks.networth[i];
@@ -154,8 +168,8 @@ void Simulation::replaceDefaults()
 		this->firms.leverage[defaultedFirm] = 1;
 		this->firms.price[defaultedFirm] = this->firms.price_dist(this->firms.gen);
 		this->firms.interestRate[defaultedFirm] = rCB + this->banks.interestRate[newBankPartner] + \
-						    + gamma * (this->firms.leverage[defaultedFirm] / \
-							((1+this->firms.networth[defaultedFirm] / maxFirmWealth)));
+						    + (gamma * this->firms.leverage[defaultedFirm]) / \
+							((1+this->firms.networth[defaultedFirm] / maxFirmWealth));
 		this->firms.defaulted[defaultedFirm] = 0;
 	}
 
@@ -174,10 +188,10 @@ void Simulation::replaceDefaults()
 
 void Simulation::updateInterestRates()
 {
-	std::vector<float> power(numberOfBanks, 0);
+	float power = 0;
 	for(int i=0; i < numberOfBanks; i++){
-		power[i] = std::pow(this->banks.networth[i], -gamma);
-		this->banks.interestRate[i] = gamma * power[i];
+		power = std::pow(this->banks.networth[i], -gamma);
+		this->banks.interestRate[i] = gamma * power;
 	}
 }
 
@@ -197,10 +211,10 @@ void Simulation::updateFirmCapital()
 
 void Simulation::updateFirmOutput()
 {
-	std::vector<float> power(numberOfFirms, 0);
+	float power = 0;
 	for(int i=0; i < numberOfFirms; i++){
-		power[i] = std::pow(this->firms.capital[i], beta);
-		this->firms.output[i] = phi * power[i];
+		power = std::pow(this->firms.capital[i], beta);
+		this->firms.output[i] = phi * power;
 	}
 }
 
@@ -225,7 +239,7 @@ void Simulation::updateFirmInterestRate()
 	}
 
 	for(int i=0; i < numberOfFirms; i++){
-		this->firms.interestRate[i] = rCB + this->banks.interestRate[banksOfFirms[i]] + (gamma * this->firms.leverage[i]) / ((1+this->firms.networth[i])/bestFirmWorth);
+		this->firms.interestRate[i] = rCB + this->banks.interestRate[banksOfFirms[i]] + gamma * (this->firms.leverage[i]) / (1+this->firms.networth[i]/bestFirmWorth);
 	}
 }
 
@@ -286,6 +300,42 @@ void Simulation::updateLossRatio()
 	}
 }
 
+void Simulation::reportResults(int p_time)
+{
+	float totalOutput = 0;
+	float capital = 0;
+	float avgPrice = 0;
+	float wealth = 0;
+	float debt = 0;
+	for(int f=0; f < numberOfFirms; f++){
+		totalOutput += firms.output[f];
+		capital += firms.capital[f];
+		avgPrice += firms.price[f];
+		wealth += firms.networth[f];
+		debt += firms.debt[f];
+	}
+	GDP[p_time] = totalOutput;
+	totalCapital[p_time] = capital;
+	avgFirmPrice[p_time] = (avgPrice/(float)numberOfFirms);
+	totalWealth[p_time] = wealth;
+	totalDebt[p_time] = debt;
+}
+
+void Simulation::saveResults()
+{
+	std::ofstream outputFile;
+	outputFile.open("output.csv");
+	outputFile << "GDP,Firm Capital,Average Price,Total Wealth,Total Debt\n";
+	for(int i=0; i < time; i++){
+		outputFile << GDP[i] << ",";
+		outputFile << totalCapital[i] << ",";
+		outputFile << avgFirmPrice[i] << ",";
+		outputFile << totalWealth[i] << ",";
+		outputFile << totalDebt[i] << "\n";
+	}
+	outputFile.close();
+}
+
 void Simulation::run()
 {
 	for(int p_time=0; p_time < time; p_time++){
@@ -315,7 +365,10 @@ void Simulation::run()
 
 		updateBankNetworth();
 
+		reportResults(p_time);
+
 		replaceDefaults();
 
 	}
+	saveResults();
 }

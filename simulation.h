@@ -8,10 +8,10 @@ class Simulation
 {
 	public:
 		// parameters
-		int time = 50;
+		int time = 2000;
 		int numberOfFirms;
 		int numberOfBanks;
-		float alpha = 0.1;
+		float alpha = 0.2;
 		float varpf = 0.4;
 		float gamma = 0.02;
 		int chi = 5;
@@ -21,7 +21,7 @@ class Simulation
 		float beta = 0.7;
 		float rCB = 0.02;
 		float cB = 0.01;
-		int seed = 900000;
+		int seed = 10000;
 
 		// Agents
 		Firms firms;
@@ -29,6 +29,13 @@ class Simulation
 
 		// Firm-bank adjacency matrix
 		std::vector<std::vector<int>> link_fb;
+
+		// Model outputs
+		std::vector<float> GDP;
+		std::vector<float> totalCapital;
+		std::vector<float> avgFirmPrice;
+		std::vector<float> totalWealth;
+		std::vector<float> totalDebt;
 
 		// Constructor
 		Simulation(int nFirms, int nBanks);
@@ -51,6 +58,8 @@ class Simulation
 		void updateFirmLeverage();
 		void updateBankNetworth();
 		void updateLossRatio();
+		void reportResults(int p_time);
+		void saveResults();
 		void run();
 };
 #endif

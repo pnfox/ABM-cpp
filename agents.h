@@ -13,7 +13,7 @@ class Firms
 		unsigned int seed;
 		std::mt19937 gen;
 		std::vector<float> price;
-		std::normal_distribution<float> price_dist{alpha, varpf};
+		std::normal_distribution<float> price_dist{alpha, std::sqrt(varpf)};
 		std::vector<float> debt;
 		std::vector<float> networth;
 		std::vector<float> profit;
